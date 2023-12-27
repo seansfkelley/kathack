@@ -852,20 +852,18 @@ Katamari!</a></h1>\
 <input id="bgmusicc" type="checkbox" checked="checked" /></label></div>\
 <div style="text-align:right; color:gray;">\
 <label>Katamari Color: <select id="khcolor">\
-<option value="#ff0000" style="background-color:#ff0000;color:#ff0000"> r </option>\
-<option value="#00ff00" style="background-color:#00ff00;color:#00ff00"> g </option>\
-<option value="#0000ff" style="background-color:#0000ff;color:#0000ff"> b </option>\
-<option selected="selected" value="#7D26CD" style="background-color:#7D26CD;color:#7D26CD"> p \
+<option value="#ff0000" style="background-color:#ff0000;color:#ff0000"> red </option>\
+<option value="#00ff00" style="background-color:#00ff00;color:#00ff00"> green </option>\
+<option value="#0000ff" style="background-color:#0000ff;color:#0000ff"> blue </option>\
+<option selected="selected" value="#7D26CD" style="background-color:#7D26CD;color:#7D26CD"> purple \
 </option></select></label><br />\
  <label title="Lower this if the game gets slow.">\
 Max Attached Objects: <select id="maxAtt">\
-<option>25</option>\
-<option>50</option>\
-<option selected="selected">75</option>\
 <option>100</option>\
-<option>9000</option></select></label><br />\
+<option selected="selected">500</option>\
+<option>9001</option></select></label><br />\
 <label title="How much to grow when an object is picked up.">\
-Growth Speed: <input id="vol_mult" type="text" size="6" value="1.0" />\
+Growth Speed: <input id="vol_mult" type="text" size="6" value="0.5" />\
 </label><br />\
 <label title="Bigger objects require a bigger katamari to pick up.">\
 Realistic Pickups? <input id="checkv" type="checkbox" checked="checked" />\
