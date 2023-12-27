@@ -3,11 +3,43 @@ Copyright Alex Leone, David Nufer, David Truong, 2011-03-11. kathack.com
 
 javascript:s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/seansfkelley/kathack@main/kh.js';document.body.appendChild(s);}void(0);
 */
-var BORDER_STYLE = '1px solid #bbb',
-  CSS_TRANSFORM = null,
-  CSS_TRANSFORM_ORIGIN = null,
-  POSSIBLE_TRANSFORM_PREFIXES = ['-webkit-', '-moz-', '-o-', '-ms-', ''],
-  khFirst = false;
+const REPLACE_WORDS_IN = new Set([
+  'a',
+  'b',
+  'big',
+  'body',
+  'cite',
+  'code',
+  'dd',
+  'div',
+  'dt',
+  'em',
+  'font',
+  'h1',
+  'h2',
+  'h3',
+  'h4',
+  'h5',
+  'h6',
+  'i',
+  'label',
+  'legend',
+  'li',
+  'p',
+  'pre',
+  'small',
+  'span',
+  'strong',
+  'sub',
+  'sup',
+  'td',
+  'th',
+  'time',
+  'tt',
+]);
+
+const BORDER_STYLE = '1px solid #bbb';
+var khFirst = false;
 
 /* When running twice on one page, update pick-uppable nodes instead of
  * creating more.
@@ -16,24 +48,6 @@ if (!window.khNodes) {
   khFirst = true;
   window.khNodes = new StickyNodes();
 }
-
-function getCssTransform() {
-  var i,
-    d = document.createElement('div'),
-    pre;
-  for (i = 0; i < POSSIBLE_TRANSFORM_PREFIXES.length; i++) {
-    pre = POSSIBLE_TRANSFORM_PREFIXES[i];
-    d.style.setProperty(pre + 'transform', 'rotate(1rad) scaleX(2)', null);
-    if (d.style.getPropertyValue(pre + 'transform')) {
-      CSS_TRANSFORM = pre + 'transform';
-      CSS_TRANSFORM_ORIGIN = pre + 'transform-origin';
-      return;
-    }
-  }
-  alert("Your browser doesn't support CSS tranforms!");
-  throw "Your browser doesn't support CSS tranforms!";
-}
-getCssTransform();
 
 /**
  * Returns true if the circle intersects the element rectangle.
@@ -146,40 +160,7 @@ function StickyNodes() {
   var domNodes = [],
     grid = [],
     GRIDX = 100,
-    GRIDY = 100,
-    REPLACE_WORDS_IN = {
-      a: 1,
-      b: 1,
-      big: 1,
-      body: 1,
-      cite: 1,
-      code: 1,
-      dd: 1,
-      div: 1,
-      dt: 1,
-      em: 1,
-      font: 1,
-      h1: 1,
-      h2: 1,
-      h3: 1,
-      h4: 1,
-      h5: 1,
-      h6: 1,
-      i: 1,
-      label: 1,
-      legend: 1,
-      li: 1,
-      p: 1,
-      pre: 1,
-      small: 1,
-      span: 1,
-      strong: 1,
-      sub: 1,
-      sup: 1,
-      td: 1,
-      th: 1,
-      tt: 1,
-    };
+    GRIDY = 100;
 
   function addDomNode(el) {
     if (el !== undefined && el !== null) {
@@ -194,7 +175,7 @@ function StickyNodes() {
     var textEls = [];
 
     function shouldAddChildren(el) {
-      return el.tagName && REPLACE_WORDS_IN[el.tagName.toLowerCase()];
+      return REPLACE_WORDS_IN.has(el.tagName?.toLowerCase());
     }
 
     function buildTextEls(el, shouldAdd) {
@@ -507,15 +488,7 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
         el: el,
         attX: attX,
         attY: attY,
-        attT:
-          'translate(' +
-          Math.round(attX) +
-          'px,' +
-          Math.round(attY) +
-          'px) ' +
-          'rotate(' +
-          attTh +
-          'rad)',
+        attT: `translate(${Math.round(attX)}px, ${Math.round(attY)}px) rotate(${attTh}rad)`,
         r: r,
         offTh: offTh,
         offPhi: 0 - phi,
@@ -529,7 +502,7 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
     el.style.position = 'absolute';
     el.style.left = -offLeft + 'px';
     el.style.top = -offTop + 'px';
-    el.style.setProperty(CSS_TRANSFORM_ORIGIN, offLeft + 'px ' + offTop + 'px', null);
+    el.style.setProperty('transform-origin', `${offLeft}px ${offTop}px`, null);
     el.style.display = 'none';
     /* copy computed styles from old object. */
     el.style.color = go.el.style.color;
@@ -679,19 +652,8 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
     //att.el.style.zIndex = 500 + Math.round(oz);
     att.el.style.zIndex = oz > 0 ? 501 : 499;
     att.el.style.setProperty(
-      CSS_TRANSFORM,
-      'translate(' +
-        x +
-        'px,' +
-        y +
-        'px) ' +
-        'rotate(' +
-        th +
-        'rad) ' +
-        'scaleX(' +
-        Math.cos(ophi) +
-        ') ' +
-        att.attT,
+      'transform',
+      `translate(${x}px, ${y}px) rotate(${th}rad) scaleX(${Math.cos(ophi)}) ${att.attT}`,
       null
     );
     return true;
@@ -921,12 +883,10 @@ Realistic Pickups? <input id="checkv" type="checkbox" checked="checked" />\
 }
 
 function main() {
-  var gameDiv, checkInterval, stickyNodes, popup;
-
-  gameDiv = document.createElement('div');
+  const gameDiv = document.createElement('div');
   gameDiv.khIgnore = true;
   document.body.appendChild(gameDiv);
-  popup = buildPopup(gameDiv);
+  const popup = buildPopup(gameDiv);
 
   /* setTimeout so that the popup displays before we freeze. */
   setTimeout(function () {
@@ -949,6 +909,4 @@ function main() {
   }, 0);
 }
 
-if (!window.noMain) {
-  main();
-}
+main();
