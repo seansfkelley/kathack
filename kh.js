@@ -1,8 +1,7 @@
 /*
 Copyright Alex Leone, David Nufer, David Truong, 2011-03-11. kathack.com
 
-javascript:var i,s,ss=['https://cdn.jsdelivr.net/gh/seansfkelley/kathack/kh.js','http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js'];for(i=0;i!=ss.length;i++){s=document.createElement('script');s.src=ss[i];document.body.appendChild(s);}void(0);
-
+javascript:s=document.createElement('script');s.src='https://cdn.jsdelivr.net/gh/seansfkelley/kathack@main/kh.js';document.body.appendChild(s);}void(0);
 */
 var BORDER_STYLE = '1px solid #bbb',
   CSS_TRANSFORM = null,
@@ -278,9 +277,6 @@ function StickyNodes() {
       startYI,
       el,
       go,
-      off,
-      w,
-      h,
       endXI = Math.floor(docW / GRIDX) + 1,
       endYI = Math.floor(docH / GRIDY) + 1;
     /* initialize grid. */
@@ -294,20 +290,22 @@ function StickyNodes() {
       if (el.khPicked) {
         continue;
       }
-      off = jQuery(el).offset();
-      w = jQuery(el).width();
-      h = jQuery(el).height();
+      const rect = el.getBoundingClientRect();
+      const documentRect = document.body.getBoundingClientRect();
+      const { width, height } = rect;
+      const top = rect.top - documentRect.y;
+      const left = rect.left - documentRect.left;
       go = {
         el: domNodes[i] /* dom element. */,
-        left: off.left,
-        right: off.left + w,
-        top: off.top,
-        bottom: off.top + h,
-        w: w,
-        h: h,
-        x: off.left + w / 2 /* center x. */,
-        y: off.top + h / 2 /* center y. */,
-        diag: Math.sqrt((w * w + h * h) / 4) /* center to corner */,
+        left: left,
+        right: left + width,
+        top: top,
+        bottom: top + height,
+        w: width,
+        h: height,
+        x: left + width / 2 /* center x. */,
+        y: top + height / 2 /* center y. */,
+        diag: Math.sqrt((width * width + height * height) / 4) /* center to corner */,
 
         /* these are for removing ourselves from the grid. */
         arrs: [] /* which arrays we're in (grid[x][y]). */,
@@ -505,7 +503,6 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
       attX = r * Math.cos(offTh),
       attY = r * Math.sin(offTh),
       el = go.el.cloneNode(true),
-      go_jel = jQuery(go.el),
       newAtt = {
         el: el,
         attX: attX,
@@ -525,7 +522,7 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
         diag: go.diag,
         removeR: r + go.diag,
         visible: false,
-        display: go_jel.css('display'),
+        display: go.el.style.display,
       };
     attached.push(newAtt);
     grow(go);
@@ -535,10 +532,10 @@ function PlayerBall(parentNode, stickyNodes, ballOpts, sounds) {
     el.style.setProperty(CSS_TRANSFORM_ORIGIN, offLeft + 'px ' + offTop + 'px', null);
     el.style.display = 'none';
     /* copy computed styles from old object. */
-    el.style.color = go_jel.css('color');
-    el.style.textDecoration = go_jel.css('text-decoration');
-    el.style.fontSize = go_jel.css('font-size');
-    el.style.fontWeight = go_jel.css('font-weight');
+    el.style.color = go.el.style.color;
+    el.style.textDecoration = go.el.style.textDecoration;
+    el.style.fontSize = go.el.style.fontSize;
+    el.style.fontWeight = go.el.style.fontWeight;
     el.khIgnore = true;
     attachedDiv.appendChild(el);
     if (sounds) {
@@ -743,7 +740,8 @@ function Game(gameDiv, stickyNodes, ballOpts) {
   window.scrollTo(0, 200);
 
   function on_resize() {
-    player1.setDocSize(jQuery(document).width() - 5, jQuery(document).height() - 5);
+    const { width, height } = document.body.getBoundingClientRect();
+    player1.setDocSize(width - 5, height - 5);
   }
   on_resize();
 
@@ -830,32 +828,34 @@ function Game(gameDiv, stickyNodes, ballOpts) {
 }
 
 function whenAllLoaded(gameDiv, popup, stickyNodes) {
-  stickyNodes.finalize(jQuery(document).width(), jQuery(document).height());
-  jQuery('#loadingp').empty();
-  jQuery('<button>Start!</button>')
-    .click(function () {
-      var game, bgmusic, ballOpts;
-      if (jQuery('#bgmusicc').attr('checked')) {
-        if (!(bgmusic = document.getElementById('khbgmusic'))) {
-          bgmusic = document.createElement('audio');
-          bgmusic.id = 'khbgmusic';
-          bgmusic.loop = 'loop';
-          bgmusic.src = 'https://cdn.jsdelivr.net/gh/seansfkelley/kathack/katamari.mp3';
-          gameDiv.appendChild(bgmusic);
-        }
-        bgmusic.play();
+  const { width, height } = document.body.getBoundingClientRect();
+  stickyNodes.finalize(width, height);
+  document.getElementById('loadingp').innerHTML = '';
+  const button = document.createElement('button');
+  button.innerHTML = 'Start!';
+  button.addEventListener('click', () => {
+    var game, bgmusic, ballOpts;
+    if (document.getElementById('bgmusicc').checked) {
+      if (!(bgmusic = document.getElementById('khbgmusic'))) {
+        bgmusic = document.createElement('audio');
+        bgmusic.id = 'khbgmusic';
+        bgmusic.loop = 'loop';
+        bgmusic.src = 'https://cdn.jsdelivr.net/gh/seansfkelley/kathack/katamari.mp3';
+        gameDiv.appendChild(bgmusic);
       }
-      ballOpts = {
-        color: jQuery('#khcolor').val(),
-        VOL_MULT: parseFloat(jQuery('#vol_mult').val()),
-        MAX_ATTACHED_VISIBLE: parseInt(jQuery('#maxAtt').val(), 10),
-        CHECK_VOLS: jQuery('#checkv').attr('checked') ? true : false,
-        MOUSEB: parseInt(jQuery('#mouseb').val(), 10),
-      };
-      gameDiv.removeChild(popup);
-      game = new Game(gameDiv, stickyNodes, ballOpts);
-    })
-    .appendTo('#loadingp');
+      bgmusic.play();
+    }
+    ballOpts = {
+      color: document.getElementById('khcolor').value,
+      VOL_MULT: parseFloat(document.getElementById('vol_mult').value),
+      MAX_ATTACHED_VISIBLE: parseInt(document.getElementById('maxAtt').value, 10),
+      CHECK_VOLS: !!document.getElementById('checkv').checked,
+      MOUSEB: parseInt(document.getElementById('mouseb').value, 10),
+    };
+    gameDiv.removeChild(popup);
+    game = new Game(gameDiv, stickyNodes, ballOpts);
+  });
+  document.getElementById('loadingp').appendChild(button);
 }
 
 function buildPopup(gameDiv) {
@@ -945,12 +945,7 @@ function main() {
       ]);
     }
 
-    checkInterval = setInterval(function () {
-      if (window.jQuery) {
-        clearInterval(checkInterval);
-        whenAllLoaded(gameDiv, popup, window.khNodes);
-      }
-    }, 100);
+    whenAllLoaded(gameDiv, popup, window.khNodes);
   }, 0);
 }
 
